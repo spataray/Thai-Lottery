@@ -41,4 +41,4 @@ Since this is a static site, deployment is extremely easy.
 Ensure your repository's root directory contains these four files:
  
 ## 🌐 Live Site
-You can view the live site at this link: [Live Site](<live_site_url_placeholder>). 
+You can view the live site at this link: [Live Site](<https://spataray.github.io/Thai-Lottery/>). 
