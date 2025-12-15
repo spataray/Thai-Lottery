@@ -3,58 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Check Thailand lottery results and verify your ticket numbers. For entertainment purposes only.">
     <title>Thailand Lottery Results Checker (Entertainment Only)</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <header>
-        <h1>\ud83c\uddfa\ud83c\udded Thailand Lottery Checker</h1>
-        <p class="disclaimer">
-            **DISCLAIMER:** This website is for **entertainment purposes only**. It does not represent an official government lottery service. Always verify results on the official Government Lottery Office (GLO) website.
-        </p>
+    <header role="banner">
+        <h1>🇹🇭 Thailand Lottery Checker</h1>
+        <div class="disclaimer" role="alert" aria-label="Important disclaimer">
+            <strong>DISCLAIMER:</strong> This website is for <strong>entertainment purposes only</strong>. It does not represent an official government lottery service. Always verify results on the official Government Lottery Office (GLO) website.
+        </div>
     </header>
 
-    <main>
-        <section id="latest-results">
-            <h2>Latest Official Results</h2>
-            <div id="results-display">
+    <main role="main">
+        <section id="latest-results" aria-labelledby="latest-results-heading">
+            <h2 id="latest-results-heading">Latest Official Results</h2>
+            <div id="results-display" role="region" aria-live="polite" aria-label="Latest lottery results">
                 <p>Loading results...</p>
             </div>
         </section>
 
         <hr>
 
-        <section id="number-checker">
-            <h2>Check Your Numbers</h2>
+        <section id="number-checker" aria-labelledby="number-checker-heading">
+            <h2 id="number-checker-heading">Check Your Numbers</h2>
             <p>Enter your 6-digit ticket number to check a potential match.</p>
-            <form id="check-form">
+            <form id="check-form" aria-label="Lottery number checker form">
                 <label for="user-ticket">Your 6-Digit Number:</label>
-                <input type="text" id="user-ticket" name="user-ticket" pattern="\d{6}" maxlength="6" required placeholder="e.g., 123456">
+                <input 
+                    type="text" 
+                    id="user-ticket" 
+                    name="user-ticket" 
+                    pattern="\d{6}" 
+                    maxlength="6" 
+                    required 
+                    placeholder="e.g., 123456"
+                    aria-required="true"
+                    aria-describedby="ticket-help"
+                    inputmode="numeric">
+                <span id="ticket-help" class="sr-only">Enter exactly 6 digits</span>
                 
                 <label for="draw-date">Check Against Draw:</label>
-                <select id="draw-date" name="draw-date" required>
+                <select 
+                    id="draw-date" 
+                    name="draw-date" 
+                    required
+                    aria-required="true">
                     <option value="">Select a Draw Date</option>
                 </select>
 
-                <button type="submit">Check For a Win!</button>
+                <button type="submit" aria-label="Check lottery numbers for winning">Check For a Win!</button>
             </form>
 
-            <div id="check-result">
-                </div>
+            <div id="check-result" role="region" aria-live="polite" aria-atomic="true">
+            </div>
         </section>
 
         <hr>
 
-        <section id="lottery-link">
-            <h2>Want to Play?</h2>
+        <section id="lottery-link" aria-labelledby="purchase-heading">
+            <h2 id="purchase-heading">Want to Play?</h2>
             <p>If you're interested in purchasing tickets, you can explore online lottery services (Note: check local regulations).</p>
-            <a href="#" class="cta-button" target="_blank" rel="noopener noreferrer">Order a Ticket Online Here</a>
+            <a href="https://www.glo.or.th/" class="cta-button" target="_blank" rel="noopener noreferrer" aria-label="Visit official Government Lottery Office website - opens in new tab">Visit Official GLO Website</a>
         </section>
 
     </main>
 
-    <footer>
+    <footer role="contentinfo">
         <p>&copy; 2025 Lottery Checker Project. For educational and entertainment use only.</p>
     </footer>
 
