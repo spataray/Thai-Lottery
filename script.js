@@ -6,6 +6,9 @@
  * - Validating user input
  * - Checking winning numbers
  * - Displaying results dynamically
+ * 
+ * IMPORTANT: This script requires data.js to be loaded first.
+ * The HTML file loads data.js before script.js to ensure lotteryResults is available.
  */
 
 // Wait for DOM to be fully loaded before executing
@@ -28,6 +31,13 @@ function initializeApp() {
  */
 function displayLatestResults() {
     const resultsDisplay = document.getElementById('results-display');
+    
+    // Check if lotteryResults is available
+    if (typeof lotteryResults === 'undefined') {
+        resultsDisplay.innerHTML = '<p class="error">Error: Lottery data not loaded. Please ensure data.js is loaded correctly.</p>';
+        console.error('lotteryResults is not defined. Make sure data.js is loaded before script.js');
+        return;
+    }
     
     if (!lotteryResults || lotteryResults.length === 0) {
         resultsDisplay.innerHTML = '<p class="error">No lottery results available.</p>';
@@ -82,6 +92,12 @@ function populateDrawDateDropdown() {
     
     if (!dropdown) {
         console.error('Draw date dropdown not found');
+        return;
+    }
+    
+    // Check if lotteryResults is available
+    if (typeof lotteryResults === 'undefined' || !lotteryResults) {
+        console.error('lotteryResults is not available');
         return;
     }
     
@@ -222,7 +238,8 @@ function showResult(message, type) {
     }
     
     // Create the result HTML
-    const resultHTML = `<p class="${type}" role="alert" aria-live="polite">${message}</p>`;
+    // Using role="status" with aria-live="polite" for non-urgent announcements
+    const resultHTML = `<p class="${type}" role="status" aria-live="polite" aria-atomic="true">${message}</p>`;
     
     resultDiv.innerHTML = resultHTML;
     
