@@ -1,0 +1,1 @@
+(JavaScript code detailing the logic and functionality for the Lottery Checker).

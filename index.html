@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thailand Lottery Results Checker (Entertainment Only)</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1>\ud83c\uddfa\ud83c\udded Thailand Lottery Checker</h1>
+        <p class="disclaimer">
+            **DISCLAIMER:** This website is for **entertainment purposes only**. It does not represent an official government lottery service. Always verify results on the official Government Lottery Office (GLO) website.
+        </p>
+    </header>
+
+    <main>
+        <section id="latest-results">
+            <h2>Latest Official Results</h2>
+            <div id="results-display">
+                <p>Loading results...</p>
+            </div>
+        </section>
+
+        <hr>
+
+        <section id="number-checker">
+            <h2>Check Your Numbers</h2>
+            <p>Enter your 6-digit ticket number to check a potential match.</p>
+            <form id="check-form">
+                <label for="user-ticket">Your 6-Digit Number:</label>
+                <input type="text" id="user-ticket" name="user-ticket" pattern="\d{6}" maxlength="6" required placeholder="e.g., 123456">
+                
+                <label for="draw-date">Check Against Draw:</label>
+                <select id="draw-date" name="draw-date" required>
+                    <option value="">Select a Draw Date</option>
+                </select>
+
+                <button type="submit">Check For a Win!</button>
+            </form>
+
+            <div id="check-result">
+                </div>
+        </section>
+
+        <hr>
+
+        <section id="lottery-link">
+            <h2>Want to Play?</h2>
+            <p>If you're interested in purchasing tickets, you can explore online lottery services (Note: check local regulations).</p>
+            <a href="#" class="cta-button" target="_blank" rel="noopener noreferrer">Order a Ticket Online Here</a>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Lottery Checker Project. For educational and entertainment use only.</p>
+    </footer>
+
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,135 @@
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f9;
+    color: #333;
+    text-align: center;
+}
+
+header {
+    background-color: #004d40; /* Dark Teal */
+    color: white;
+    padding: 20px 0;
+    margin-bottom: 20px;
+}
+
+h1 {
+    margin: 0;
+    font-size: 2.5em;
+}
+
+main {
+    max-width: 900px;
+    margin: auto;
+    padding: 0 20px;
+}
+
+section {
+    background: white;
+    padding: 20px;
+    margin-bottom: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+h2 {
+    color: #004d40;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 10px;
+}
+
+.disclaimer {
+    color: #ffc107; /* Amber/Yellow for warning */
+    background-color: #5d4037; /* Brown background for high contrast */
+    padding: 10px;
+    border-radius: 4px;
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+/* Form Styles */
+#check-form label {
+    display: block;
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+#check-form input, #check-form select, #check-form button {
+    padding: 10px;
+    margin-top: 5px;
+    width: 100%;
+    max-width: 300px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box; /* Include padding in width */
+}
+
+#check-form button {
+    background-color: #004d40;
+    color: white;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background-color 0.3s;
+}
+
+#check-form button:hover {
+    background-color: #00796b;
+}
+
+/* Results Display */
+.lottery-numbers {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #d32f2f; /* Red for high importance */
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #fffde7;
+    border-radius: 4px;
+}
+
+/* CTA Button for Affiliate Link */
+.cta-button {
+    display: inline-block;
+    background-color: #f57c00; /* Orange/Gold */
+    color: white;
+    padding: 15px 30px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 1.1em;
+    transition: background-color 0.3s;
+}
+
+.cta-button:hover {
+    background-color: #e65100;
+}
+
+footer {
+    margin-top: 40px;
+    padding: 15px 0;
+    background-color: #004d40;
+    color: white;
+    font-size: 0.8em;
+}
+
+#check-result p {
+    font-size: 1.2em;
+    padding: 15px;
+    margin-top: 15px;
+    border-radius: 4px;
+}
+
+.win {
+    background-color: #c8e6c9; /* Light green */
+    color: #388e3c; /* Dark green */
+    font-weight: bold;
+    border: 1px solid #388e3c;
+}
+
+.lose {
+    background-color: #ffcdd2; /* Light red */
+    color: #d32f2f; /* Dark red */
+    border: 1px solid #d32f2f;
+}
