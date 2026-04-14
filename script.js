@@ -20,11 +20,86 @@ document.addEventListener('DOMContentLoaded', function() {
 /**
  * Initialize the application
  */
-function initializeApp() {
+async function initializeApp() {
+    // Try to fetch latest results from API first
+    await fetchLatestResults();
+    
     displayLatestResults();
     populateDrawDateDropdown();
     setupFormSubmitHandler();
     displaySongkranGreeting();
+}
+
+/**
+ * Fetch the latest lottery results from a live API
+ */
+async function fetchLatestResults() {
+    try {
+        console.log('Fetching live lottery data...');
+        const response = await fetch('https://lotto.api.rayriffy.com/latest');
+        
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        
+        const apiData = await response.json();
+        
+        // Map API response to our app's internal format
+        // The Rayriffy API returns an object with "data" property
+        if (apiData && apiData.data) {
+            const latest = apiData.data;
+            
+            const mappedResult = {
+                date: formatDateToISO(latest.date), // Convert "DDMMYYYY" to "YYYY-MM-DD"
+                dateDisplay: formatDateFromAPI(latest.date),
+                firstPrize: latest.prizes[0].number[0],
+                twoDigit: latest.prizes[latest.prizes.length - 1].number[0],
+                threeDigitFront: latest.runningNumbers[0].number,
+                threeDigitBack: latest.runningNumbers[1].number
+            };
+
+            // Check if this result is already in our list or newer
+            // For simplicity in this static app, we'll unshift it to the top 
+            // of the existing lotteryResults array if it's new
+            if (typeof lotteryResults !== 'undefined') {
+                const alreadyExists = lotteryResults.some(r => r.date === mappedResult.date);
+                if (!alreadyExists) {
+                    lotteryResults.unshift(mappedResult);
+                    console.log('Live data integrated successfully:', mappedResult.dateDisplay);
+                }
+            }
+        }
+    } catch (error) {
+        console.warn('Could not fetch live data, falling back to data.js:', error);
+    }
+}
+
+/**
+ * Helper to convert API date (DDMMYYYY) to ISO format (YYYY-MM-DD)
+ */
+function formatDateToISO(dateStr) {
+    if (!dateStr || dateStr.length !== 8) return dateStr;
+    const day = dateStr.substring(0, 2);
+    const month = dateStr.substring(2, 4);
+    const year = dateStr.substring(4, 8);
+    return `${year}-${month}-${day}`;
+}
+
+/**
+ * Helper to format API date (DDMMYYYY) to display string
+ */
+function formatDateFromAPI(dateStr) {
+    if (!dateStr || dateStr.length !== 8) return dateStr;
+    const day = dateStr.substring(0, 2);
+    const monthIndex = parseInt(dateStr.substring(2, 4)) - 1;
+    const year = dateStr.substring(4, 8);
+    
+    const monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+    
+    return `${monthNames[monthIndex]} ${parseInt(day)}, ${year}`;
 }
 
 /**

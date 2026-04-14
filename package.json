@@ -1,6 +1,6 @@
 {
   "name": "thai-lottery",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "This website is created solely for **entertainment and educational purposes**.",
   "main": "data.js",
   "scripts": {

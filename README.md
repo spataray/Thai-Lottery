@@ -16,7 +16,8 @@ The key goal was to create a functional, single-page application (SPA) that can 
  
 ### ✨ Features
  
-* **Latest Results Display:** Shows the most recent draw results based on the hardcoded data, now including **First Prize Neighbors**.
+* **Live API Integration:** Now fetches the most recent lottery results in real-time using the **Rayriffy Thai Lotto API**.
+* **Latest Results Display:** Shows the most recent draw results based on the live data, now including **First Prize Neighbors**.
 * **Ticket Checker:** Allows users to input a 6-digit number and select a draw date to check for potential matches.
 * **Multiple Match Detection:** The checker now detects and displays **all winning prizes** for a single ticket (e.g., if you hit both First Prize and Last Two Digits).
 * **Draw History:** Dropdown menu populated with available historical draw dates, now updated through early 2026.
