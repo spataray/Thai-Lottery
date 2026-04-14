@@ -35,8 +35,15 @@ function displaySongkranGreeting() {
     const month = now.getMonth(); // 0-indexed, April is 3
     const day = now.getDate();
     
-    if (month === 3 && day >= 13 && day <= 15) {
+    console.log('Checking Songkran Greeting:', { month, day });
+
+    // Songkran is April 13-15, but let's show it for the whole festival week for testing
+    if (month === 3 && day >= 10 && day <= 20) {
         const header = document.querySelector('header');
+        if (!header) {
+            console.error('Header not found for Songkran greeting');
+            return;
+        }
         const greeting = document.createElement('div');
         greeting.className = 'songkran-greeting';
         greeting.innerHTML = `
