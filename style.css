@@ -398,13 +398,105 @@ footer {
     }
 }
 
-/* Focus styles for better keyboard navigation */
-a:focus,
-button:focus,
-input:focus,
-select:focus {
-    outline: 3px solid #FFD700;
-    outline-offset: 2px;
+/* Fun Features Styles */
+
+/* Interactive Water Gun Cursor */
+body {
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" style="font-size: 24px;"><text y="24">🔫</text></svg>'), auto;
+}
+
+/* Water Splash Effect */
+.splash-particle {
+    position: fixed;
+    pointer-events: none;
+    background: #00BFFF;
+    border-radius: 50%;
+    z-index: 9999;
+    animation: splash-fall 0.8s ease-out forwards;
+}
+
+@keyframes splash-fall {
+    0% { transform: translate(0, 0) scale(1); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
+}
+
+/* Countdown Timer */
+.countdown-container {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 15px;
+    border: 2px solid #FFD700;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.countdown-timer {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    font-size: 1.2em;
+    margin-top: 10px;
+}
+
+.countdown-item {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+.countdown-label {
+    font-size: 0.6em;
+    display: block;
+    text-transform: uppercase;
+    color: #cbd5e1;
+}
+
+/* Lucky Number Generator */
+.lucky-generator {
+    background: linear-gradient(135deg, #fff 0%, #fef3c7 100%);
+    border: 2px dashed #b8860b;
+    padding: 20px;
+    border-radius: 15px;
+    margin-top: 20px;
+}
+
+.lucky-number-display {
+    font-size: 2.5em;
+    font-weight: bold;
+    color: #b8860b;
+    margin: 15px 0;
+    letter-spacing: 5px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    min-height: 1.2em;
+}
+
+.shake-btn {
+    background: linear-gradient(135deg, #b8860b 0%, #92400e 100%);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.shake-btn:hover {
+    transform: rotate(3deg) scale(1.05);
+}
+
+.shake-animation {
+    animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes shake {
+    10%, 90% { transform: translate3d(-1px, 0, 0); }
+    20%, 80% { transform: translate3d(2px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+    40%, 60% { transform: translate3d(4px, 0, 0); }
 }
 
 /* Horizontal rule styling with Thai-inspired pattern */

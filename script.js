@@ -18,6 +18,7 @@ async function initializeApp() {
     populateDrawDateDropdown();
     setupFormSubmitHandler();
     displaySongkranGreeting();
+    setupFunFeatures();
 
     // Setup manual refresh button
     const refreshBtn = document.getElementById('refresh-btn');
@@ -27,6 +28,124 @@ async function initializeApp() {
 
     // Keep background polling every 30 mins as a backup
     setInterval(handleRefresh, 30 * 60 * 1000); 
+}
+
+/**
+ * Setup logic for fun interactive features
+ */
+function setupFunFeatures() {
+    setupWaterGun();
+    setupLuckyGenerator();
+    startCountdown();
+}
+
+/**
+ * Interactive Water Gun Cursor logic
+ */
+function setupWaterGun() {
+    document.addEventListener('mousedown', function(e) {
+        createSplash(e.clientX, e.clientY, 15);
+    });
+}
+
+/**
+ * Create a water splash effect at specific coordinates
+ */
+function createSplash(x, y, count = 10) {
+    for (let i = 0; i < count; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'splash-particle';
+        
+        // Random size
+        const size = Math.random() * 10 + 5;
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        
+        // Position at click
+        particle.style.left = `${x}px`;
+        particle.style.top = `${y}px`;
+        
+        // Random trajectory
+        const dx = (Math.random() - 0.5) * 200;
+        const dy = (Math.random() - 0.5) * 200;
+        particle.style.setProperty('--dx', `${dx}px`);
+        particle.style.setProperty('--dy', `${dy}px`);
+        
+        document.body.appendChild(particle);
+        
+        // Cleanup
+        setTimeout(() => particle.remove(), 800);
+    }
+}
+
+/**
+ * Lucky Number Generator logic
+ */
+function setupLuckyGenerator() {
+    const shakeBtn = document.getElementById('shake-btn');
+    const luckyDisplay = document.getElementById('lucky-display');
+    
+    if (!shakeBtn || !luckyDisplay) return;
+    
+    shakeBtn.addEventListener('click', function() {
+        // Add shake animation
+        luckyDisplay.classList.add('shake-animation');
+        shakeBtn.disabled = true;
+        luckyDisplay.textContent = '...';
+        
+        setTimeout(() => {
+            const luckyNum = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+            luckyDisplay.textContent = luckyNum.split('').join(' ');
+            luckyDisplay.classList.remove('shake-animation');
+            shakeBtn.disabled = false;
+            
+            // Celebration splash!
+            const rect = luckyDisplay.getBoundingClientRect();
+            createSplash(rect.left + rect.width / 2, rect.top + rect.height / 2, 20);
+        }, 600);
+    });
+}
+
+/**
+ * Countdown Timer logic for next draw (1st and 16th of each month)
+ */
+function startCountdown() {
+    const timerDisplay = document.getElementById('countdown-timer');
+    if (!timerDisplay) return;
+    
+    function updateTimer() {
+        const now = new Date();
+        let target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 14, 30, 0);
+        
+        // Find next 1st or 16th
+        if (now.getDate() > 16 || (now.getDate() === 16 && now.getHours() >= 15)) {
+            // Next month 1st
+            target = new Date(now.getFullYear(), now.getMonth() + 1, 1, 14, 30, 0);
+        } else if (now.getDate() > 1 || (now.getDate() === 1 && now.getHours() >= 15)) {
+            // This month 16th
+            target = new Date(now.getFullYear(), now.getMonth(), 16, 14, 30, 0);
+        } else {
+            // This month 1st
+            target = new Date(now.getFullYear(), now.getMonth(), 1, 14, 30, 0);
+        }
+        
+        const diff = target - now;
+        
+        const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+        const m = Math.floor((diff / (1000 * 60)) % 60);
+        const s = Math.floor((diff / 1000) % 60);
+        
+        timerDisplay.innerHTML = `
+            <div class="countdown-item">${d}<span class="countdown-label">Days</span></div>
+            <div class="countdown-item">${h}<span class="countdown-label">Hrs</span></div>
+            <div class="countdown-item">${m}<span class="countdown-label">Min</span></div>
+            <div class="countdown-item">${s}<span class="countdown-label">Sec</span></div>
+        `;
+    }
+    
+    updateTimer();
+    setInterval(updateTimer, 1000);
 }
 
 /**
@@ -335,7 +454,13 @@ function getNeighbors(firstPrize) {
 function showResult(message, type) {
     const resultDiv = document.getElementById('check-result');
     if (!resultDiv) return;
-    
+
     resultDiv.innerHTML = `<p class="${type}" role="status" aria-live="polite">${message}</p>`;
     resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    // Trigger celebration splash if win!
+    if (type === 'win') {
+        const rect = resultDiv.getBoundingClientRect();
+        createSplash(rect.left + rect.width / 2, rect.top + rect.height / 2, 30);
+    }
 }
