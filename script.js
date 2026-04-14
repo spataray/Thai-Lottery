@@ -1,14 +1,5 @@
 /**
  * Thai Lottery Checker - Main JavaScript File
- * This script handles all interactive features including:
- * - Displaying latest lottery results
- * - Populating draw date dropdown
- * - Validating user input
- * - Checking winning numbers
- * - Displaying results dynamically
- * 
- * IMPORTANT: This script requires data.js to be loaded first.
- * The HTML file loads data.js before script.js to ensure lotteryResults is available.
  */
 
 // Wait for DOM to be fully loaded before executing
@@ -22,27 +13,57 @@ document.addEventListener('DOMContentLoaded', function() {
  */
 async function initializeApp() {
     // Try to fetch latest results from API first
-    await fetchLatestResults();
+    await handleRefresh();
     
-    displayLatestResults();
     populateDrawDateDropdown();
     setupFormSubmitHandler();
     displaySongkranGreeting();
 
-    // Setup auto-refresh every 30 minutes to check for new draws
-    setInterval(async function() {
-        console.log('Auto-refreshing lottery data...');
-        const hasNewData = await fetchLatestResults();
-        if (hasNewData) {
-            displayLatestResults();
-            populateDrawDateDropdown();
+    // Setup manual refresh button
+    const refreshBtn = document.getElementById('refresh-btn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', handleRefresh);
+    }
+
+    // Keep background polling every 30 mins as a backup
+    setInterval(handleRefresh, 30 * 60 * 1000); 
+}
+
+/**
+ * Handles the logic for refreshing the data and updating the UI
+ */
+async function handleRefresh() {
+    const statusDiv = document.getElementById('api-status');
+    const refreshBtn = document.getElementById('refresh-btn');
+    
+    if (statusDiv) statusDiv.innerHTML = 'Connecting to official servers...';
+    if (refreshBtn) refreshBtn.classList.add('loading');
+
+    const hasNewData = await fetchLatestResults();
+    
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString();
+
+    if (hasNewData !== null) {
+        if (statusDiv) {
+            statusDiv.innerHTML = `✅ Successfully synced with official results at ${timeStr}`;
+            statusDiv.className = 'api-status success';
         }
-    }, 30 * 60 * 1000); 
+        displayLatestResults();
+        populateDrawDateDropdown();
+    } else {
+        if (statusDiv) {
+            statusDiv.innerHTML = `⚠️ Using offline data (Last sync attempt failed at ${timeStr})`;
+            statusDiv.className = 'api-status error';
+        }
+    }
+    
+    if (refreshBtn) refreshBtn.classList.remove('loading');
 }
 
 /**
  * Fetch the latest lottery results from a live API
- * @returns {Promise<boolean>} True if new data was added, false otherwise
+ * @returns {Promise<boolean|null>} True if successful, null if failed
  */
 async function fetchLatestResults() {
     try {
@@ -55,16 +76,11 @@ async function fetchLatestResults() {
         
         const apiData = await response.json();
         
-        // Map API response to our app's internal format
-        if (apiData && apiData.response) { // Note: adjusted to .response based on real API check
+        if (apiData && apiData.response) {
             const latest = apiData.response;
             const isoDate = formatDateToISO(latest.date_raw || latest.date.replace(/[^0-9]/g, '')); 
             
-            // The API returns Thai date strings usually, let's be careful
-            // For now, let's trust our ISO conversion from the numeric date if available
-            // If the API changed its structure slightly, we adjust:
-            const lastPrize = latest.prizes[latest.prizes.length - 1];
-            
+            // Adjust mapping based on real Rayriffy API structure observed in CURL
             const mappedResult = {
                 date: isoDate,
                 dateDisplay: latest.date,
@@ -75,16 +91,19 @@ async function fetchLatestResults() {
             };
 
             if (typeof lotteryResults !== 'undefined') {
-                const alreadyExists = lotteryResults.some(r => r.date === mappedResult.date);
+                const alreadyExists = lotteryResults.find(r => r.date === mappedResult.date);
                 if (!alreadyExists) {
                     lotteryResults.unshift(mappedResult);
-                    console.log('Live data integrated successfully:', mappedResult.dateDisplay);
-                    return true;
+                } else {
+                    // Update existing record with the latest data if needed
+                    Object.assign(alreadyExists, mappedResult);
                 }
+                return true;
             }
         }
     } catch (error) {
-        console.warn('Could not fetch live data, falling back to data.js:', error);
+        console.warn('Could not fetch live data:', error);
+        return null;
     }
     return false;
 }
@@ -115,39 +134,17 @@ function formatDateToISO(dateStr) {
 }
 
 /**
- * Helper to format API date (DDMMYYYY) to display string
- */
-function formatDateFromAPI(dateStr) {
-    if (!dateStr || dateStr.length !== 8) return dateStr;
-    const day = dateStr.substring(0, 2);
-    const monthIndex = parseInt(dateStr.substring(2, 4)) - 1;
-    const year = dateStr.substring(4, 8);
-    
-    const monthNames = [
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
-    ];
-    
-    return `${monthNames[monthIndex]} ${parseInt(day)}, ${year}`;
-}
-
-/**
  * Display a festive Songkran greeting if it's Songkran (April 13-15)
  */
 function displaySongkranGreeting() {
     const now = new Date();
-    const month = now.getMonth(); // 0-indexed, April is 3
+    const month = now.getMonth(); 
     const day = now.getDate();
     
-    console.log('Checking Songkran Greeting:', { month, day });
-
-    // Songkran is April 13-15, but let's show it for the whole festival week for testing
     if (month === 3 && day >= 10 && day <= 20) {
         const header = document.querySelector('header');
-        if (!header) {
-            console.error('Header not found for Songkran greeting');
-            return;
-        }
+        if (!header || document.querySelector('.songkran-greeting')) return;
+        
         const greeting = document.createElement('div');
         greeting.className = 'songkran-greeting';
         greeting.innerHTML = `
@@ -167,23 +164,14 @@ function displaySongkranGreeting() {
 function displayLatestResults() {
     const resultsDisplay = document.getElementById('results-display');
     
-    // Check if lotteryResults is available
-    if (typeof lotteryResults === 'undefined') {
-        resultsDisplay.innerHTML = '<p class="error">Error: Lottery data not loaded. Please ensure data.js is loaded correctly.</p>';
-        console.error('lotteryResults is not defined. Make sure data.js is loaded before script.js');
+    if (typeof lotteryResults === 'undefined' || !lotteryResults || lotteryResults.length === 0) {
+        if (resultsDisplay) resultsDisplay.innerHTML = '<p class="error">No lottery results available.</p>';
         return;
     }
     
-    if (!lotteryResults || lotteryResults.length === 0) {
-        resultsDisplay.innerHTML = '<p class="error">No lottery results available.</p>';
-        return;
-    }
-    
-    // Get the latest result (first in the array)
     const latest = lotteryResults[0];
     const neighbors = getNeighbors(latest.firstPrize);
     
-    // Build the HTML for displaying results
     let html = `
         <div class="latest-result">
             <h3>Draw Date: ${latest.dateDisplay}</h3>
@@ -210,109 +198,82 @@ function displayLatestResults() {
         </div>
     `;
     
-    resultsDisplay.innerHTML = html;
+    if (resultsDisplay) resultsDisplay.innerHTML = html;
 }
 
 /**
- * Format a number string for display (adds spaces for readability)
- * @param {string} num - The number to format
- * @returns {string} Formatted number
+ * Format a number string for display
  */
 function formatNumber(num) {
     if (!num) return '';
-    // Add space between digits for better readability
     return num.split('').join(' ');
 }
 
 /**
- * Populate the draw date dropdown with available dates from lotteryResults
+ * Populate the draw date dropdown
  */
 function populateDrawDateDropdown() {
     const dropdown = document.getElementById('draw-date');
+    if (!dropdown || typeof lotteryResults === 'undefined' || !lotteryResults) return;
     
-    if (!dropdown) {
-        console.error('Draw date dropdown not found');
-        return;
-    }
-    
-    // Check if lotteryResults is available
-    if (typeof lotteryResults === 'undefined' || !lotteryResults) {
-        console.error('lotteryResults is not available');
-        return;
-    }
-    
-    // Clear existing options except the first placeholder
+    const currentValue = dropdown.value;
     dropdown.innerHTML = '<option value="">Select a Draw Date</option>';
     
-    // Add an option for each lottery draw
     lotteryResults.forEach(function(draw) {
         const option = document.createElement('option');
         option.value = draw.date;
         option.textContent = draw.dateDisplay;
         dropdown.appendChild(option);
     });
+
+    if (currentValue) dropdown.value = currentValue;
 }
 
 /**
- * Setup the form submit handler for checking lottery numbers
+ * Setup the form submit handler
  */
 function setupFormSubmitHandler() {
     const form = document.getElementById('check-form');
-    
-    if (!form) {
-        console.error('Check form not found');
-        return;
-    }
+    if (!form) return;
     
     form.addEventListener('submit', function(event) {
-        event.preventDefault(); // Prevent form from submitting normally
+        event.preventDefault();
         checkUserTicket();
     });
 }
 
 /**
- * Check the user's ticket number against the selected draw
+ * Check the user's ticket number
  */
 function checkUserTicket() {
     const ticketInput = document.getElementById('user-ticket');
     const dateSelect = document.getElementById('draw-date');
-    const resultDiv = document.getElementById('check-result');
     
-    // Get and validate input values
     const ticketNumber = ticketInput.value.trim();
     const selectedDate = dateSelect.value;
     
-    // Validate ticket number
     if (!ticketNumber || ticketNumber.length !== 6 || !/^\d{6}$/.test(ticketNumber)) {
         showResult('Please enter a valid 6-digit number.', 'error');
         return;
     }
     
-    // Validate draw date selection
     if (!selectedDate) {
         showResult('Please select a draw date.', 'error');
         return;
     }
     
-    // Find the selected draw
-    const selectedDraw = lotteryResults.find(function(draw) {
-        return draw.date === selectedDate;
-    });
+    const selectedDraw = lotteryResults.find(draw => draw.date === selectedDate);
     
     if (!selectedDraw) {
         showResult('Selected draw not found.', 'error');
         return;
     }
     
-    // Check for winning matches
     const wins = checkForWin(ticketNumber, selectedDraw);
     
-    // Display the result
     if (wins.length > 0) {
         let winMessage = '🎉 Congratulations! You won the following prize(s):<ul>';
-        wins.forEach(function(win) {
-            winMessage += `<li>${win}</li>`;
-        });
+        wins.forEach(win => winMessage += `<li>${win}</li>`);
         winMessage += '</ul>';
         showResult(winMessage, 'win');
     } else {
@@ -322,37 +283,29 @@ function checkUserTicket() {
 
 /**
  * Check if the ticket number matches any winning numbers
- * @param {string} ticketNumber - The 6-digit ticket number
- * @param {object} draw - The lottery draw object to check against
- * @returns {string[]} Array of prize type strings for each match
  */
 function checkForWin(ticketNumber, draw) {
     const wins = [];
 
-    // Check First Prize (exact match)
     if (ticketNumber === draw.firstPrize) {
         wins.push('First Prize (รางวัลที่ 1) - 6 Million Baht!');
     }
     
-    // Check First Prize Neighbors (+/- 1)
     const neighbors = getNeighbors(draw.firstPrize);
     if (neighbors.includes(ticketNumber)) {
         wins.push('First Prize Neighbor (รางวัลข้างเคียงรางวัลที่ 1) - 100,000 Baht');
     }
 
-    // Check Last Two Digits
     const lastTwo = ticketNumber.substring(4, 6);
     if (lastTwo === draw.twoDigit) {
         wins.push('Last Two Digits (รางวัลเลขท้าย 2 ตัว) - 2,000 Baht');
     }
     
-    // Check First Three Digits
     const firstThree = ticketNumber.substring(0, 3);
     if (draw.threeDigitFront.includes(firstThree)) {
         wins.push('First Three Digits (รางวัลเลขหน้า 3 ตัว) - 4,000 Baht');
     }
     
-    // Check Last Three Digits
     const lastThree = ticketNumber.substring(3, 6);
     if (draw.threeDigitBack.includes(lastThree)) {
         wins.push('Last Three Digits (รางวัลเลขท้าย 3 ตัว) - 4,000 Baht');
@@ -362,16 +315,14 @@ function checkForWin(ticketNumber, draw) {
 }
 
 /**
- * Calculate the neighbors (+/- 1) of a 6-digit lottery number
- * @param {string} firstPrize - The 6-digit first prize number
- * @returns {string[]} Array of two neighbor strings
+ * Calculate the neighbors (+/- 1)
  */
 function getNeighbors(firstPrize) {
+    if (!firstPrize) return ['', ''];
     const num = parseInt(firstPrize, 10);
     const n1 = (num - 1 + 1000000) % 1000000;
     const n2 = (num + 1) % 1000000;
     
-    // Pad back to 6 digits
     return [
         n1.toString().padStart(6, '0'),
         n2.toString().padStart(6, '0')
@@ -379,24 +330,12 @@ function getNeighbors(firstPrize) {
 }
 
 /**
- * Display a result message to the user
- * @param {string} message - The message to display
- * @param {string} type - The type of message ('win', 'lose', or 'error')
+ * Display a result message
  */
 function showResult(message, type) {
     const resultDiv = document.getElementById('check-result');
+    if (!resultDiv) return;
     
-    if (!resultDiv) {
-        console.error('Result div not found');
-        return;
-    }
-    
-    // Create the result HTML
-    // Using role="status" with aria-live="polite" for non-urgent announcements
-    const resultHTML = `<p class="${type}" role="status" aria-live="polite" aria-atomic="true">${message}</p>`;
-    
-    resultDiv.innerHTML = resultHTML;
-    
-    // Scroll to result for better UX
+    resultDiv.innerHTML = `<p class="${type}" role="status" aria-live="polite">${message}</p>`;
     resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
