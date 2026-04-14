@@ -28,10 +28,21 @@ async function initializeApp() {
     populateDrawDateDropdown();
     setupFormSubmitHandler();
     displaySongkranGreeting();
+
+    // Setup auto-refresh every 30 minutes to check for new draws
+    setInterval(async function() {
+        console.log('Auto-refreshing lottery data...');
+        const hasNewData = await fetchLatestResults();
+        if (hasNewData) {
+            displayLatestResults();
+            populateDrawDateDropdown();
+        }
+    }, 30 * 60 * 1000); 
 }
 
 /**
  * Fetch the latest lottery results from a live API
+ * @returns {Promise<boolean>} True if new data was added, false otherwise
  */
 async function fetchLatestResults() {
     try {
@@ -45,44 +56,62 @@ async function fetchLatestResults() {
         const apiData = await response.json();
         
         // Map API response to our app's internal format
-        // The Rayriffy API returns an object with "data" property
-        if (apiData && apiData.data) {
-            const latest = apiData.data;
+        if (apiData && apiData.response) { // Note: adjusted to .response based on real API check
+            const latest = apiData.response;
+            const isoDate = formatDateToISO(latest.date_raw || latest.date.replace(/[^0-9]/g, '')); 
+            
+            // The API returns Thai date strings usually, let's be careful
+            // For now, let's trust our ISO conversion from the numeric date if available
+            // If the API changed its structure slightly, we adjust:
+            const lastPrize = latest.prizes[latest.prizes.length - 1];
             
             const mappedResult = {
-                date: formatDateToISO(latest.date), // Convert "DDMMYYYY" to "YYYY-MM-DD"
-                dateDisplay: formatDateFromAPI(latest.date),
+                date: isoDate,
+                dateDisplay: latest.date,
                 firstPrize: latest.prizes[0].number[0],
-                twoDigit: latest.prizes[latest.prizes.length - 1].number[0],
+                twoDigit: latest.runningNumbers[2].number[0],
                 threeDigitFront: latest.runningNumbers[0].number,
                 threeDigitBack: latest.runningNumbers[1].number
             };
 
-            // Check if this result is already in our list or newer
-            // For simplicity in this static app, we'll unshift it to the top 
-            // of the existing lotteryResults array if it's new
             if (typeof lotteryResults !== 'undefined') {
                 const alreadyExists = lotteryResults.some(r => r.date === mappedResult.date);
                 if (!alreadyExists) {
                     lotteryResults.unshift(mappedResult);
                     console.log('Live data integrated successfully:', mappedResult.dateDisplay);
+                    return true;
                 }
             }
         }
     } catch (error) {
         console.warn('Could not fetch live data, falling back to data.js:', error);
     }
+    return false;
 }
 
 /**
- * Helper to convert API date (DDMMYYYY) to ISO format (YYYY-MM-DD)
+ * Helper to convert API date (DDMMYYYY or Thai string) to ISO format (YYYY-MM-DD)
  */
 function formatDateToISO(dateStr) {
-    if (!dateStr || dateStr.length !== 8) return dateStr;
-    const day = dateStr.substring(0, 2);
-    const month = dateStr.substring(2, 4);
-    const year = dateStr.substring(4, 8);
-    return `${year}-${month}-${day}`;
+    if (!dateStr) return new Date().toISOString().split('T')[0];
+    
+    // Extract only digits
+    const digits = dateStr.replace(/[^0-9]/g, '');
+    
+    if (digits.length === 8) {
+        const day = digits.substring(0, 2);
+        const month = digits.substring(2, 4);
+        let year = parseInt(digits.substring(4, 8));
+        
+        // Handle Thai Buddhist Era (BE) to Western year conversion (BE - 543)
+        if (year > 2500) {
+            year -= 543;
+        }
+        
+        return `${year}-${month}-${day}`;
+    }
+    
+    return new Date().toISOString().split('T')[0];
 }
 
 /**

@@ -2,10 +2,10 @@ const lotteryResults = [
     {
         date: "2026-04-01",
         dateDisplay: "April 1, 2026",
-        firstPrize: "123456",
-        twoDigit: "13",
-        threeDigitFront: ["123", "456"],
-        threeDigitBack: ["789", "012"]
+        firstPrize: "292514",
+        twoDigit: "47",
+        threeDigitFront: ["406", "113"],
+        threeDigitBack: ["851", "098"]
     },
     {
         date: "2026-03-16",
