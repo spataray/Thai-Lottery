@@ -16,9 +16,11 @@ The key goal was to create a functional, single-page application (SPA) that can 
  
 ### ✨ Features
  
-* **Latest Results Display:** Shows the most recent draw results based on the hardcoded data.
-* **Ticket Checker:** Allows users to input a 6-digit number and select a draw date to check for potential matches (simplified prize structure).
-* **Draw History:** Dropdown menu populated with available historical draw dates.
+* **Latest Results Display:** Shows the most recent draw results based on the hardcoded data, now including **First Prize Neighbors**.
+* **Ticket Checker:** Allows users to input a 6-digit number and select a draw date to check for potential matches.
+* **Multiple Match Detection:** The checker now detects and displays **all winning prizes** for a single ticket (e.g., if you hit both First Prize and Last Two Digits).
+* **Draw History:** Dropdown menu populated with available historical draw dates, now updated through early 2026.
+* **Festive Theme:** Automatic **Songkran Festival** greeting for visitors during the Thai New Year (April 13-15).
 * **Clear Disclaimer:** Prominent and mandatory warning that the service is for entertainment only.
 * **Affiliate Link Spot:** Dedicated section for a potential link to purchase tickets (currently a placeholder).
  

@@ -24,6 +24,30 @@ function initializeApp() {
     displayLatestResults();
     populateDrawDateDropdown();
     setupFormSubmitHandler();
+    displaySongkranGreeting();
+}
+
+/**
+ * Display a festive Songkran greeting if it's Songkran (April 13-15)
+ */
+function displaySongkranGreeting() {
+    const now = new Date();
+    const month = now.getMonth(); // 0-indexed, April is 3
+    const day = now.getDate();
+    
+    if (month === 3 && day >= 13 && day <= 15) {
+        const header = document.querySelector('header');
+        const greeting = document.createElement('div');
+        greeting.className = 'songkran-greeting';
+        greeting.innerHTML = `
+            <div class="songkran-content">
+                <span class="emoji">💦</span>
+                <span class="text">Happy Songkran Festival! สุขสันต์วันสงกรานต์!</span>
+                <span class="emoji">🌸</span>
+            </div>
+        `;
+        header.prepend(greeting);
+    }
 }
 
 /**
@@ -46,14 +70,19 @@ function displayLatestResults() {
     
     // Get the latest result (first in the array)
     const latest = lotteryResults[0];
+    const neighbors = getNeighbors(latest.firstPrize);
     
     // Build the HTML for displaying results
     let html = `
         <div class="latest-result">
             <h3>Draw Date: ${latest.dateDisplay}</h3>
-            <div class="prize-section">
+            <div class="prize-section first-prize">
                 <h4>First Prize (รางวัลที่ 1)</h4>
                 <p class="lottery-numbers">${formatNumber(latest.firstPrize)}</p>
+            </div>
+            <div class="prize-section">
+                <h4>First Prize Neighbors (รางวัลข้างเคียงรางวัลที่ 1)</h4>
+                <p class="lottery-numbers">${neighbors.map(formatNumber).join(' , ')}</p>
             </div>
             <div class="prize-section">
                 <h4>Last Two Digits (รางวัลเลขท้าย 2 ตัว)</h4>
@@ -165,11 +194,16 @@ function checkUserTicket() {
     }
     
     // Check for winning matches
-    const result = checkForWin(ticketNumber, selectedDraw);
+    const wins = checkForWin(ticketNumber, selectedDraw);
     
     // Display the result
-    if (result.isWin) {
-        showResult(`🎉 Congratulations! Your number matches: ${result.prizeType}`, 'win');
+    if (wins.length > 0) {
+        let winMessage = '🎉 Congratulations! You won the following prize(s):<ul>';
+        wins.forEach(function(win) {
+            winMessage += `<li>${win}</li>`;
+        });
+        winMessage += '</ul>';
+        showResult(winMessage, 'win');
     } else {
         showResult('Sorry, your number did not match any winning numbers for this draw.', 'lose');
     }
@@ -179,49 +213,58 @@ function checkUserTicket() {
  * Check if the ticket number matches any winning numbers
  * @param {string} ticketNumber - The 6-digit ticket number
  * @param {object} draw - The lottery draw object to check against
- * @returns {object} Result object with isWin and prizeType properties
+ * @returns {string[]} Array of prize type strings for each match
  */
 function checkForWin(ticketNumber, draw) {
+    const wins = [];
+
     // Check First Prize (exact match)
     if (ticketNumber === draw.firstPrize) {
-        return {
-            isWin: true,
-            prizeType: 'First Prize (รางวัลที่ 1) - 6 Million Baht!'
-        };
+        wins.push('First Prize (รางวัลที่ 1) - 6 Million Baht!');
     }
     
+    // Check First Prize Neighbors (+/- 1)
+    const neighbors = getNeighbors(draw.firstPrize);
+    if (neighbors.includes(ticketNumber)) {
+        wins.push('First Prize Neighbor (รางวัลข้างเคียงรางวัลที่ 1) - 100,000 Baht');
+    }
+
     // Check Last Two Digits
     const lastTwo = ticketNumber.substring(4, 6);
     if (lastTwo === draw.twoDigit) {
-        return {
-            isWin: true,
-            prizeType: 'Last Two Digits (รางวัลเลขท้าย 2 ตัว) - 2,000 Baht'
-        };
+        wins.push('Last Two Digits (รางวัลเลขท้าย 2 ตัว) - 2,000 Baht');
     }
     
     // Check First Three Digits
     const firstThree = ticketNumber.substring(0, 3);
     if (draw.threeDigitFront.includes(firstThree)) {
-        return {
-            isWin: true,
-            prizeType: 'First Three Digits (รางวัลเลขหน้า 3 ตัว) - 4,000 Baht'
-        };
+        wins.push('First Three Digits (รางวัลเลขหน้า 3 ตัว) - 4,000 Baht');
     }
     
     // Check Last Three Digits
     const lastThree = ticketNumber.substring(3, 6);
     if (draw.threeDigitBack.includes(lastThree)) {
-        return {
-            isWin: true,
-            prizeType: 'Last Three Digits (รางวัลเลขท้าย 3 ตัว) - 4,000 Baht'
-        };
+        wins.push('Last Three Digits (รางวัลเลขท้าย 3 ตัว) - 4,000 Baht');
     }
     
-    // No match found
-    return {
-        isWin: false,
-        prizeType: null
-    };
+    return wins;
+}
+
+/**
+ * Calculate the neighbors (+/- 1) of a 6-digit lottery number
+ * @param {string} firstPrize - The 6-digit first prize number
+ * @returns {string[]} Array of two neighbor strings
+ */
+function getNeighbors(firstPrize) {
+    const num = parseInt(firstPrize, 10);
+    const n1 = (num - 1 + 1000000) % 1000000;
+    const n2 = (num + 1) % 1000000;
+    
+    // Pad back to 6 digits
+    return [
+        n1.toString().padStart(6, '0'),
+        n2.toString().padStart(6, '0')
+    ];
 }
 
 /**
